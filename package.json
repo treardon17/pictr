@@ -1,0 +1,45 @@
+{
+  "name": "pictr",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "NODE_ENV=DEV vue-cli-service serve & sleep 5 && NODE_ENV=DEV electron app.js",
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "electron": "^3.0.6",
+    "vue": "^2.5.17"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^3.0.5",
+    "@vue/cli-plugin-eslint": "^3.0.5",
+    "@vue/cli-service": "^3.0.5",
+    "vue-template-compiler": "^2.5.17"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "rules": {},
+    "parserOptions": {
+      "parser": "babel-eslint"
+    }
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
+}
