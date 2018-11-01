@@ -1,5 +1,5 @@
 const path = require('path')
-var os = require("os")
+const os = require('os')
 const mkdirp = require('mkdirp')
 const isJSON = require('is-json')
 const fs = require('fs-extra')
@@ -31,6 +31,9 @@ class FileIO {
         }
         const uniqueFiles = [...new Set(combinedFiles)]
         return resolve(uniqueFiles)
+      } else if (src instanceof Object) { // eslint-disable-line
+        const files = await this.getFilesInDirectory(src)
+        return resolve(files)
       }
 
       const filePath = this.getAliasedFilePath({ src })
@@ -43,7 +46,7 @@ class FileIO {
         }
       }
       const globPath = path.resolve(filePath, depthString)
-      glob(globPath, (err, files) => {
+      glob(globPath, (err, files) => { // eslint-disable-line
         // If there were no errors
         if (!err) {
           // copy the array
@@ -51,21 +54,21 @@ class FileIO {
           // file type checking
           const regex = this.fileExtRegex[type] || type
           if (type != null && regex instanceof RegExp) {
-            fileList = fileList.filter((file) => regex.test(file))
+            fileList = fileList.filter(file => regex.test(file))
           }
           // change file path if needed
           if (!fullPath) {
-            fileList = fileList.map((file) => file.replace(filePath, ''))
+            fileList = fileList.map(file => file.replace(filePath, ''))
           }
           return resolve(fileList)
-        } else reject(err)
+        } reject(err)
       })
     })
   }
 
   isDirectory({ src }) {
     try {
-      return fs.statSync(src).isDirectory() 
+      return fs.statSync(src).isDirectory()
     } catch (error) {
       return false
     }
@@ -87,7 +90,7 @@ class FileIO {
       if (exists) {
         fs.readFile(filePath, { encoding: 'utf-8' }, (err, data) => {
           err ? reject(err) : resolve(data)
-        });
+        })
       } else {
         reject('File does not exist')
       }
@@ -177,11 +180,10 @@ class FileIO {
         .then(() => {
           const fileExists = fs.existsSync(filePath)
           if (!fileExists) {
-            fs.openSync(filePath, 'w');
+            fs.openSync(filePath, 'w')
           }
           fs.appendFile(filePath, `${output}${os.EOL}`, (err) => {
-            if (err) { reject() }
-            else { resolve() }
+            if (err) { reject() } else { resolve() }
           })
         })
     })
@@ -193,8 +195,8 @@ FileIO.prototype.alias = {
 }
 
 FileIO.prototype.fileExtRegex = {
-  'image': (/\.(gif|jpe?g|tiff|png)$/i),
-  'jpeg': (/\.(jpe?g)$/i)
+  image: (/\.(gif|jpe?g|tiff|png)$/i),
+  jpeg: (/\.(jpe?g)$/i)
 }
 
 module.exports = new FileIO()
