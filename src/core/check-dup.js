@@ -1,9 +1,9 @@
-const Util = require('./util')
-const TRImage = require('./core/image')
+const Util = require('../util')
+const TRImage = require('./image')
 
 
 const checkDups = async ({ src, src2 }) => {
-  if (!src2) src2 = src
+  if (!src2) src2 = src // eslint-disable-line
   return new Promise(async (resolve, reject) => {
     const images1 = await Util.FileIO.getFilesInDirectory({
       src,
@@ -11,7 +11,7 @@ const checkDups = async ({ src, src2 }) => {
       fullPath: true,
       depth: -1
     })
-    
+
     const images2 = await Util.FileIO.getFilesInDirectory({
       src: src2,
       type: 'jpeg',
@@ -25,18 +25,16 @@ const checkDups = async ({ src, src2 }) => {
     console.log(`Images1: ${images1.length} images`)
     console.log(`Images2: ${images2.length} images`)
 
-    const getCachedImage = async (imgPath) => {
-      return new Promise(async (resolve, reject) => {
-        let image
-        if (cache[imgPath]) image = cache[imgPath]
-        else {
-          image = new TRImage({ path: imgPath })
-          await image.updateImageData()
-          cache[imgPath] = image
-        }
-        resolve(image)
-      })
-    }
+    const getCachedImage = async imgPath => new Promise(async (resolve, reject) => { // eslint-disable-line
+      let image
+      if (cache[imgPath]) image = cache[imgPath]
+      else {
+        image = new TRImage({ path: imgPath })
+        await image.updateImageData()
+        cache[imgPath] = image
+      }
+      resolve(image)
+    })
 
     for (let img1Index = 0; img1Index < images1.length; img1Index += 1) {
       const img1Path = images1[img1Index]
@@ -66,16 +64,11 @@ const checkDups = async ({ src, src2 }) => {
   })
 }
 
-checkDups({
-  src: '/Volumes/TDR1TB/Pictures/Google\ Photos/HEIC_TO_JPEG',
-  src2: '/Volumes/TDR1TB/Pictures/2018'
-}).then(() => {
-  console.log('done')
-})
-
 // checkDups({
-//   src: '@/images/',
+//   src: '/Volumes/TDR1TB/Pictures/Google\ Photos/HEIC_TO_JPEG',
+//   src2: '/Volumes/TDR1TB/Pictures/2018'
 // }).then(() => {
 //   console.log('done')
 // })
 
+module.exports = checkDups
