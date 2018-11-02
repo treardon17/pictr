@@ -1,4 +1,3 @@
-// const { job, start, stop } = require('microjob')
 const Util = require('../../util')
 const TRImage = require('../image')
 
@@ -22,21 +21,6 @@ class ImageManager {
 
   async createImages({ src, chunk = 500, depth = -1, fullPath = true, type = 'image' }) {
     return new Promise(async (resolve, reject) => {
-      console.log(process.dlopen)
-      // try {
-      //   await start()
-      //   /* eslint-disable */
-      //   const self = this
-      //   const res = await job(() => {
-      //     return this.hello()
-      //   })
-      //   resolve(res)
-      //   /* eslint-enable */
-      // } catch (err) {
-      //   reject(err)
-      // } finally {
-      //   await stop()
-      // }
     })
   }
 
