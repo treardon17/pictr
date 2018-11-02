@@ -14,6 +14,7 @@
     "btoa": "^1.2.1",
     "dist-exiftool": "^10.53.0",
     "is-json": "^2.0.1",
+    "microjob": "^0.3.0",
     "node-exiftool": "^2.3.0",
     "path": "^0.12.7",
     "resemblejs": "^2.10.3",

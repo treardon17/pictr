@@ -21,16 +21,17 @@ class ImageManager {
 
   async createImages({ src, chunk = 500, depth = -1, fullPath = true, type = 'image' }) {
     return new Promise(async (resolve, reject) => {
-      // Util.FileIO.getFilesInDirectory({ src }).then(resolve).catch(reject)
-      Util.Thread.run(({ __dirname, ...input }, done) => {
-        const path = require('path') // eslint-disable-line
-        const Util = require(path.resolve(`${__dirname}/../util/index.js`)) // eslint-disable-line
-        Util.FileIO.getFilesInDirectory(input).then(done)
-      }, { src, chunk, depth, fullPath, type }).then((files) => {
+      /* eslint-disable */
+      Util.Thread.run(({ __dirname, ...input }) => new Promise((resolve, reject) => {
+        const path = require('path')
+        const Util = require(path.resolve(`${__dirname}/../../util/index.js`))
+        Util.FileIO.getFilesInDirectory(input).then(resolve).catch(reject)
+      }), { src, chunk, depth, fullPath, type }).then((files) => {
         resolve(files)
       }).catch((err) => {
         reject(err)
       })
+      /* eslint-enable */
     })
   }
 
