@@ -18,9 +18,9 @@ class FileIO {
 
   async getFilesInDirectory({
     src,
-    type,
-    fullPath = false,
-    depth = 0
+    type = '*',
+    fullPath = true,
+    depth = -1
   } = {}) {
     return new Promise(async (resolve, reject) => {
       if (Array.isArray(src)) {
@@ -195,6 +195,7 @@ FileIO.prototype.alias = {
 }
 
 FileIO.prototype.fileExtRegex = {
+  '*': (/(.*)$/i),
   image: (/\.(gif|jpe?g|tiff|png)$/i),
   jpeg: (/\.(jpe?g)$/i)
 }

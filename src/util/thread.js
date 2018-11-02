@@ -4,7 +4,7 @@ class ThreadManager {
   static run(func, params = {}, { onExit } = {}) {
     return new Promise((resolve, reject) => {
       const thread = spawn(func)
-      thread.send(params)
+      thread.send({ ...params, __dirname })
         .on('message', (response) => {
           resolve(response)
           thread.kill()
