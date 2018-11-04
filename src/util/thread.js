@@ -1,33 +1,20 @@
-// const { spawn } = require('threads')
 const { job, start, stop } = require('microjob')
 
 class ThreadManager {
-  // static run(func, params = {}, { onExit } = {}) {
-  //   return new Promise((resolve, reject) => {
-  //     const thread = spawn(func)
-  //     thread.send({ ...params, __dirname })
-  //       .on('message', (response) => {
-  //         resolve(response)
-  //         thread.kill()
-  //       })
-  //       .on('error', (error) => {
-  //         reject(error)
-  //         thread.kill()
-  //       })
-  //       .on('exit', () => {
-  //         typeof onExit === 'function' && onExit()
-  //       })
-  //   })
-  // }
   static async run(func, params = {}, options = {}) {
+    console.log('running thread', func, params, options)
     return new Promise(async (resolve, reject) => {
       try {
         await start()
-        const res = await job(func, params)
+        console.log('in pool')
+        const res = await job(func, { data: params })
+        console.log('after job', res)
         resolve(res)
       } catch (err) {
+        console.log('err in thread', err)
         reject(err)
       } finally {
+        console.log('in finally')
         await stop()
       }
     })

@@ -19,19 +19,40 @@ class ImageManager {
     })
   }
 
-  async createImages({ src, chunk = 500, depth = -1, fullPath = true, type = 'image' }) {
+  async createImages({ src, chunk = 100, depth = -1, fullPath = true, type = 'image' }) {
     return new Promise(async (resolve, reject) => {
-      /* eslint-disable */
-      Util.Thread.run(({ __dirname, ...input }) => new Promise((resolve, reject) => {
-        const path = require('path')
-        const Util = require(path.resolve(`${__dirname}/../../util/index.js`))
-        Util.FileIO.getFilesInDirectory(input).then(resolve).catch(reject)
-      }), { src, chunk, depth, fullPath, type }).then((files) => {
-        resolve(files)
-      }).catch((err) => {
-        reject(err)
-      })
-      /* eslint-enable */
+      try {
+        // const imageChunks = await this.imagesInFolder({ src, chunk, depth, fullPath, type })
+        /* eslint-disable */
+        const data = { test: 'hello world' }
+        Util.Thread.run((data) => {
+          return data
+          // return new Promise((resolve, reject) => {
+          //   resolve(data)
+          // })
+        }, data)
+          .then(resolve)
+          .catch(reject)
+        // Util.Thread.run((input) => new Promise((threadResolve) => {
+        //     // const path = require('path')
+        //     // const Util = require(path.resolve(`${__dirname}/../../util/index.js`))
+        //     threadResolve(input)
+        //   }), { testing: 'hello world' })
+        //     .then((files) => { resolve(files) })
+        //     .catch((err) => { reject(err) })
+        // Promise.all(imageChunks.map((images) => {
+        //   return Util.Thread.run((input) => new Promise((threadResolve) => {
+        //     // const path = require('path')
+        //     // const Util = require(path.resolve(`${__dirname}/../../util/index.js`))
+        //     threadResolve(input)
+        //   }), { images })
+        //     .then((files) => { resolve(files) })
+        //     .catch((err) => { reject(err) })
+        // })).then(resolve)
+        /* eslint-enable */
+      } catch (err) {
+        reject()
+      }
     })
   }
 
