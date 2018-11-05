@@ -1,24 +1,49 @@
 const { job, start, stop } = require('microjob')
 
 class ThreadManager {
-  static async run(func, params = {}, options = {}) {
-    console.log('running thread', func, params, options)
+  constructor() {
+    this.poolStarted = false
+  }
+
+  async startWorkerPool() {
     return new Promise(async (resolve, reject) => {
       try {
+        this.poolStarted = true
         await start()
-        console.log('in pool')
+        resolve()
+      } catch (err) {
+        this.poolStarted = false
+        reject(err)
+      }
+    })
+  }
+
+  async stopWorkerPool() {
+    return new Promise(async (resolve, reject) => {
+      try {
+        this.poolStarted = false
+        await stop()
+        resolve()
+      } catch (err) {
+        this.poolStarted = false
+        reject(err)
+      }
+    })
+  }
+
+  async run(func, params = {}, options = { stopPool: true }) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        if (!this.poolStarted) await this.startWorkerPool()
         const res = await job(func, { data: params })
-        console.log('after job', res)
         resolve(res)
       } catch (err) {
-        console.log('err in thread', err)
         reject(err)
       } finally {
-        console.log('in finally')
-        await stop()
+        if (!options || (options && options.stopPool)) await this.stopWorkerPool()
       }
     })
   }
 }
 
-module.exports = ThreadManager
+module.exports = new ThreadManager()

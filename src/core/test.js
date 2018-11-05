@@ -20,4 +20,6 @@ for (let i = 0; i < 21; i += 1) {
 const queue = new Util.ThreadQueue({ concurrent: 2, tasks })
 queue.run().then((results) => {
   console.log(results)
+}).catch((err) => {
+  console.log(err)
 })

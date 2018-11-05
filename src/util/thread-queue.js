@@ -18,10 +18,8 @@ class ThreadQueue {
         const taskChunk = this.getTaskChunk()
         const values = await Promise.all(taskChunk.map((task) => {
           const { func, params, options } = task
-          console.log(func, params, options)
-          return ThreadManager.run(func, params, options)
+          return ThreadManager.run(func, params, { stopPool: false })
         }))
-        console.log('after promise.all', values)
         resolve(values)
       } catch (err) {
         reject(err)
@@ -33,11 +31,12 @@ class ThreadQueue {
     return new Promise(async (resolve, reject) => {
       const values = []
       try {
+        await ThreadManager.startWorkerPool()
         while (this.tasks.length > 0) {
           const chunkValues = await this.runChunk()
-          console.log('chunk values', chunkValues)
           values.push(...chunkValues)
         }
+        await ThreadManager.stopWorkerPool()
         resolve(values)
       } catch (err) {
         reject(err)
