@@ -6,18 +6,19 @@ const Util = require('../util')
 // }).catch((error) => {
 //   console.log('error:', error)
 // })
+/* eslint-disable */
 const tasks = []
-for (let i = 0; i < 21; i += 1) {
+for (let i = 0; i < 9; i += 1) {
   const task = {
     func: (params) => {
-      console.log('params', params)
+      // console.log('params', params)
       return params.test
     },
     params: { test: i }
   }
   tasks.push(task)
 }
-const queue = new Util.ThreadQueue({ concurrent: 2, tasks })
+const queue = new Util.ThreadQueue({ concurrent: 3, tasks })
 queue.run().then((results) => {
   console.log(results)
 }).catch((err) => {
