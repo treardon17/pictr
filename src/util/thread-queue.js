@@ -1,3 +1,4 @@
+const events = require('events')
 const ThreadManager = require('./thread')
 
 class ThreadQueue {
@@ -8,11 +9,23 @@ class ThreadQueue {
     this.chunkTasks = chunkTasks
     this.currentTasks = []
     this.results = {}
+    this.setProcessVariables()
     this.addTasks(tasks)
   }
 
   get isFinished() {
     return this.tasks.length === 0 && this.currentTasks.length === 0
+  }
+
+  setProcessVariables() {
+    if (this.concurrent > 10) {
+      if (parseInt(process.env.MAX_WORKERS, 10) < this.concurrent) {
+        process.env.MAX_WORKERS = this.concurrent
+      }
+      if (events.EventEmitter.defaultMaxListeners < this.concurrent) {
+        events.EventEmitter.defaultMaxListeners = this.concurrent + 5
+      }
+    }
   }
 
   addTasks(tasks = [], { start = false } = {}) {
