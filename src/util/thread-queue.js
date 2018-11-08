@@ -1,10 +1,11 @@
 const ThreadManager = require('./thread')
 
 class ThreadQueue {
-  constructor({ concurrent = 10, tasks = [] } = {}) {
+  constructor({ concurrent = 10, tasks = [], chunkTasks = false } = {}) {
     this.totalTaskCount = 0
     this.concurrent = concurrent
     this.tasks = []
+    this.chunkTasks = chunkTasks
     this.currentTasks = []
     this.results = {}
     this.addTasks(tasks)
@@ -14,7 +15,7 @@ class ThreadQueue {
     return this.tasks.length === 0 && this.currentTasks.length === 0
   }
 
-  addTasks(tasks = []) {
+  addTasks(tasks = [], { start = false } = {}) {
     const taskIDs = []
     if (Array.isArray(tasks)) {
       tasks.forEach((task) => {
@@ -22,18 +23,20 @@ class ThreadQueue {
         taskIDs.push(taskID)
       })
     }
+    if (start) this.run()
     return taskIDs
   }
 
-  addTask(task = {}) {
+  addTask(task = {}, { start = false } = {}) {
     const taskID = this.totalTaskCount
     task.id = taskID // eslint-disable-line
     this.totalTaskCount += 1
     if (task instanceof Object && task.func) {
       this.tasks.push(task)
     } else {
-      console.error('Task', task, 'must be an object containing a func: Function, and params: Object')
+      console.error(new Error('Task must be an object containing a func: Function, and params: Object'))
     }
+    if (start) this.run()
     return taskID
   }
 
@@ -62,7 +65,6 @@ class ThreadQueue {
   }
 
   async runChunk(num = this.concurrent) {
-    console.log('running chunk', num)
     return new Promise(async (resolve, reject) => {
       if (this.tasks.length === 0) resolve()
       try {
@@ -154,11 +156,11 @@ class ThreadQueue {
     })
   }
 
-  async run({ chunk = false } = {}) {
+  async run() {
     return new Promise(async (resolve, reject) => {
       try {
         await ThreadManager.startWorkerPool()
-        if (chunk) await this.runAllChunks()
+        if (this.chunkTasks) await this.runAllChunks()
         else await this.runAsNeeded()
         await ThreadManager.stopWorkerPool()
         resolve()

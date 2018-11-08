@@ -10,9 +10,10 @@ const Util = require('../util')
 const tasks = []
 for (let i = 0; i < 9; i += 1) {
   const task = {
-    func: (params) => {
-      // console.log('params', params)
-      return params.test
+    func: async (params) => {
+      return await new Promise((resolve) => setTimeout(() => {
+        resolve(params.test)
+      }, 1500))
     },
     params: { test: i }
   }
