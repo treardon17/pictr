@@ -19,8 +19,8 @@ for (let i = 0; i < 9; i += 1) {
   tasks.push(task)
 }
 const queue = new Util.ThreadQueue({ concurrent: 3, tasks })
-queue.run().then((results) => {
-  console.log(results)
+queue.run().then(() => {
+  console.log(queue.results)
 }).catch((err) => {
   console.log(err)
 })

@@ -2,9 +2,11 @@ const ThreadManager = require('./thread')
 
 class ThreadQueue {
   constructor({ concurrent = 10, tasks = [] } = {}) {
+    this.totalTaskCount = 0
     this.concurrent = concurrent
     this.tasks = []
     this.currentTasks = []
+    this.results = {}
     this.addTasks(tasks)
   }
 
@@ -13,14 +15,44 @@ class ThreadQueue {
   }
 
   addTasks(tasks = []) {
-    if (Array.isArray(tasks)) tasks.forEach((task) => { this.addTask(task) })
+    const taskIDs = []
+    if (Array.isArray(tasks)) {
+      tasks.forEach((task) => {
+        const taskID = this.addTask(task)
+        taskIDs.push(taskID)
+      })
+    }
+    return taskIDs
   }
 
   addTask(task = {}) {
+    const taskID = this.totalTaskCount
+    task.id = taskID // eslint-disable-line
+    this.totalTaskCount += 1
     if (task instanceof Object && task.func) {
       this.tasks.push(task)
     } else {
       console.error('Task', task, 'must be an object containing a func: Function, and params: Object')
+    }
+    return taskID
+  }
+
+  addResults(results) {
+    if (Array.isArray(results)) {
+      results.forEach((result) => {
+        this.addResult(result)
+      })
+    } else {
+      console.error(new Error('`results` must be of type Array'))
+    }
+  }
+
+  addResult(result) {
+    if (result instanceof Object && result._id != null) {
+      const { _id, ...rest } = result
+      this.results[_id] = rest
+    } else {
+      console.error(new Error('`result` must be of type Object, and contain an `_id`'))
     }
   }
 
@@ -30,17 +62,24 @@ class ThreadQueue {
   }
 
   async runChunk(num = this.concurrent) {
+    console.log('running chunk', num)
     return new Promise(async (resolve, reject) => {
       if (this.tasks.length === 0) resolve()
       try {
+        const parallelIDs = []
         const taskChunk = this.getTaskChunk(num)
         const currentTasks = taskChunk.map((task) => {
-          const { func, params, options } = task
+          const { func, id, options } = task
+          let { params } = task
+          if (!params) params = {}
+          params._id = id
+          parallelIDs.push(id)
           return ThreadManager.run(func, params, { stopPool: false })
         })
         this.currentTasks = currentTasks
         const values = await Promise.all(currentTasks)
-        resolve(values)
+        const returnValues = values.map((value, index) => ({ _id: parallelIDs[index], value }))
+        resolve(returnValues)
       } catch (err) {
         reject(err)
       }
@@ -49,13 +88,12 @@ class ThreadQueue {
 
   async runAllChunks() {
     return new Promise(async (resolve, reject) => {
-      const values = []
       try {
         while (this.tasks.length > 0) {
           const chunkValues = await this.runChunk(this.concurrent)
-          values.push(...chunkValues)
+          this.addResults(chunkValues)
         }
-        resolve(values)
+        resolve()
       } catch (err) {
         reject(err)
       }
@@ -69,13 +107,16 @@ class ThreadQueue {
       this.currentTasks.push(...toRun)
       let finishCount = 0
       toRun.forEach((task) => {
-        const { func, params, options } = task
+        const { func, id, options } = task
+        let { params } = task
+        if (!params) params = {}
+        params._id = id
         ThreadManager.run(func, params, { stopPool: false })
           .then((value) => {
             if (typeof onTaskComplete === 'function') onTaskComplete(task, value)
           })
           .catch((err) => {
-            if (typeof onTaskError === 'function') onTaskError(task, value)
+            if (typeof onTaskError === 'function') onTaskError(task, err)
           })
           .finally(() => {
             finishCount += 1
@@ -95,15 +136,14 @@ class ThreadQueue {
         this.fillFreeSpaces(async (task, value) => {
           const indexOfTask = this.currentTasks.indexOf(task)
           this.currentTasks.splice(indexOfTask, 1)
-          values.push(value)
+          values.push({ _id: task.id, value })
           this.runAsNeeded()
             .then((valuesNext) => {
               values.push(...valuesNext)
-              console.log('values next', valuesNext)
               resolve(values)
             })
         }).then(() => {
-          console.log('then', values)
+          this.addResults(values)
           if (this.isFinished) {
             resolve(values)
           }
@@ -114,13 +154,14 @@ class ThreadQueue {
     })
   }
 
-  async run() {
+  async run({ chunk = false } = {}) {
     return new Promise(async (resolve, reject) => {
       try {
         await ThreadManager.startWorkerPool()
-        const values = await this.runAsNeeded()
+        if (chunk) await this.runAllChunks()
+        else await this.runAsNeeded()
         await ThreadManager.stopWorkerPool()
-        resolve(values)
+        resolve()
       } catch (err) {
         reject(err)
       }
